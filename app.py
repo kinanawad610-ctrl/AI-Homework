@@ -1,50 +1,27 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. إعدادات الواجهة السرية والقفل
-st.set_page_config(page_title="Kinan Secure System", page_icon="🛡️")
+# إعدادات الصفحة والاسم اللي بيظهر على الشاشة
+st.set_page_config(page_title="مساعد كنان", layout="centered")
 
-# كود CSS لمنع الهروب وإخفاء الإعدادات
-st.markdown("""
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stChatInput {border: 2px solid #ff4b4b;}
-    </style>
-    """, unsafe_allow_html=True)
+st.title("مساعد كنان 🤖 (محمي)")
+st.caption("نظام ترجمة والدراسة لـ Inheritance Games")
 
-# 2. تهيئة العقل المدبر (Gemini)
-genai.configure(api_key="AIzaSyAIrwvDQx47fH3NLM216qIP3qdu4IVlTsY")
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+# خانة إدخال المفتاح السري - عشان يشتغل التطبيق
+api_key = st.text_input("أدخل مفتاح Gemini لبدء التشغيل:", type="password")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# 3. العنوان الجانبي لـ "الإمبراطورة"
-with st.sidebar:
-    st.title("👑 بوابة التحكم")
-    st.write("نظام فحص صلة القرابة")
-    id_photo = st.file_uploader("ارفع الهوية للتحقق", type=['jpg', 'png', 'jpeg'])
-    if id_photo:
-        st.warning("جاري مطابقة البيانات مع المبرمج كنان...")
-
-# 4. واجهة المحادثة الرئيسية
-st.title("🤖 مساعد كنان (محمي)")
-st.info("نظام ترجمة Inheritance Games والدراسة")
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-if prompt := st.chat_input("تحدث معي أو ارفع صورة الكتاب..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    with st.chat_message("assistant"):
-        system_rules = "أنت مساعد كنان. ممنوع يهرب من الدراسة. لو حاول يغير الموضوع ذكّره بالإمبراطورة وبكتابه."
-        response = model.generate_content(f"{system_rules}\nكنان: {prompt}")
-        st.markdown(response.text)
-        st.session_state.messages.append({"role": "assistant", "content": response.text})
+if api_key:
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
+        user_input = st.chat_input("تحدث معي أو ارفع صورة الكتاب...")
+        
+        if user_input:
+            response = model.generate_content(user_input)
+            st.write(response.text)
+            
+    except Exception as e:
+        st.error(f"حدث خطأ في المفتاح: {e}")
+else:
+    st.warning("يرجى إدخال المفتاح السري (API Key) في الخانة أعلاه لتفعيل التطبيق.")
