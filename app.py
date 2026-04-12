@@ -1,19 +1,20 @@
 import streamlit as st
 import google.generativeai as genai
 
-# إعدادات الصفحة
+# إعدادات الواجهة
 st.set_page_config(page_title="مساعد كنان", layout="centered")
 
 st.title("مساعد كنان 🤖")
-st.caption("نظام الدراسة والترجمة الخاص بك")
+st.caption("نظامك الخاص للترجمة والدراسة")
 
-# إدخال المفتاح
-api_key = st.text_input("أدخل مفتاح Gemini:", type="password")
+# خانة المفتاح السري
+api_key = st.text_input("أدخل مفتاح Gemini الجديد:", type="password")
 
 if api_key:
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # هذا السطر هو السر لحل مشكلة الخطأ السابق
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
         
         if "messages" not in st.session_state:
             st.session_state.messages = []
@@ -22,7 +23,7 @@ if api_key:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        if prompt := st.chat_input("تحدث معي..."):
+        if prompt := st.chat_input("اسألني أي شيء..."):
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
@@ -35,4 +36,4 @@ if api_key:
     except Exception as e:
         st.error(f"حدث خطأ: {e}")
 else:
-    st.info("أدخل المفتاح السري لكي نبدأ!")
+    st.info("انسخ المفتاح الجديد من AI Studio والحقه هنا يا بطل!")
