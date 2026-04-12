@@ -1,11 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
 
-# إعدادات الصفحة والاسم
+# إعدادات الاسم والشكل
 st.set_page_config(page_title="مساعد كنان", layout="centered")
 
-st.title("مساعد كنان 🤖 (محمي)")
-st.caption("نظام الدراسة والترجمة الخاص بكنان")
+st.title("مساعد كنان 🤖")
+st.caption("نظام الدراسة والترجمة الخاص بك")
 
 # خانة المفتاح السري
 api_key = st.text_input("أدخل مفتاح Gemini لبدء التشغيل:", type="password")
@@ -13,10 +13,9 @@ api_key = st.text_input("أدخل مفتاح Gemini لبدء التشغيل:", t
 if api_key:
     try:
         genai.configure(api_key=api_key)
-        # استخدمنا gemini-pro لأنه الأضمن حالياً
-        model = genai.GenerativeModel('gemini-pro')
+        # استخدمنا هذا الموديل لأنه الأحدث والأسرع
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
-        # مكان الدردشة
         if "messages" not in st.session_state:
             st.session_state.messages = []
 
@@ -34,6 +33,10 @@ if api_key:
                 st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             
+    except Exception as e:
+        st.error(f"حدث خطأ: {e}")
+else:
+    st.info("أدخل المفتاح السري (API Key) لكي نبدأ العمل!")
     except Exception as e:
         st.error(f"حدث خطأ: {e}")
 else:
