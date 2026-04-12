@@ -12,8 +12,8 @@ if api_key:
     try:
         genai.configure(api_key=api_key)
         
-        # هنا الحل: طلبنا الموديل الأكثر استقراراً حالياً
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # التعديل هنا: كتبنا اسم الموديل بطريقة يفهمها النظام فوراً
+        model = genai.GenerativeModel('models/gemini-1.5-flash')
         
         if "messages" not in st.session_state:
             st.session_state.messages = []
@@ -27,7 +27,6 @@ if api_key:
             with st.chat_message("user"):
                 st.markdown(prompt)
 
-            # توليد الرد
             response = model.generate_content(prompt)
             
             with st.chat_message("assistant"):
@@ -35,13 +34,6 @@ if api_key:
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             
     except Exception as e:
-        # إذا حدث خطأ 404 مرة أخرى، سنقوم بتجربة الموديل الاحتياطي تلقائياً
-        try:
-            model = genai.GenerativeModel('gemini-pro')
-            response = model.generate_content(prompt)
-            with st.chat_message("assistant"):
-                st.markdown(response.text)
-        except:
-            st.error(f"تأكد من صلاحية المفتاح السري. الخطأ: {e}")
+        st.error(f"خطأ: تأكد من لصق المفتاح الجديد. ({e})")
 else:
-    st.info("انسخ المفتاح الجديد من AI Studio والحقه هنا!")
+    st.info("انسخ المفتاح من AI Studio والصقه هنا.")
