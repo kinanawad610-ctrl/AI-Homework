@@ -15,8 +15,8 @@ if api_key:
         # ربط المفتاح بالنظام
         genai.configure(api_key=api_key)
         
-        # اختيار الموديل الصحيح والمستقر (هذا السطر هو الحل)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # التعديل الذهبي: كتابة المسار الكامل للموديل لحل خطأ 404
+        model = genai.GenerativeModel('models/gemini-1.5-flash')
         
         # إنشاء ذاكرة للمحادثة
         if "messages" not in st.session_state:
@@ -44,3 +44,4 @@ if api_key:
         st.error(f"تأكد من لصق المفتاح الجديد بشكل صحيح. الخطأ: {e}")
 else:
     st.info("انسخ المفتاح الجديد من AI Studio والحقه هنا!")
+    
