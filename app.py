@@ -1,63 +1,67 @@
 import streamlit as st
 import google.generativeai as genai
 import random
+import time
 
-# 1. إعدادات المتصفح الاحترافية
-st.set_page_config(
-    page_title="مساعد كنان الذكي",
-    page_icon="🤖",
-    layout="centered"
-)
+# 1. إعدادات الصفحة الاحترافية
+st.set_page_config(page_title="مساعد كنان الذكي", page_icon="🤖", layout="centered")
 
-# 2. تصميم الواجهة (أفضل وأوضح)
+# تحسين مظهر الدردشة بـ CSS بسيط
+st.markdown("""
+    <style>
+    .stChatMessage { border-radius: 15px; }
+    .stChatInput { border-radius: 10px; }
+    </style>
+    """, unsafe_allow_html=True)
+
 st.title("🤖 مساعد كنان الذكي")
+st.caption("النسخة المطورة المستقرة")
 st.markdown("---")
 
-# 3. نظام "الخزنة السرية" الذكي
+# 2. نظام إدارة المفاتيح الذكي
 if "GEMINI_KEYS" in st.secrets:
     keys_list = st.secrets["GEMINI_KEYS"]
-    
-    # التأكد أن المفاتيح في قائمة جاهزة للتوزيع
-    if isinstance(keys_list, str):
-        keys_list = [keys_list]
+    if isinstance(keys_list, str): keys_list = [keys_list]
 
-    # 4. نظام ذاكرة المحادثة (عشان يتذكر الكلام السابق)
+    # تهيئة الذاكرة
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # عرض الدردشة بشكل أنيق
+    # عرض الرسائل السابقة
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # 5. منطقة إدخال الأسئلة
+    # 3. معالجة الإدخال
     if prompt := st.chat_input("اسألني أي شيء يا بطل..."):
-        # عرض سؤال المستخدم فوراً
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        try:
-            # اختيار أسرع مفتاح متوفر حالياً (Random Load Balancing)
-            selected_key = random.choice(keys_list)
-            genai.configure(api_key=selected_key)
+        with st.chat_message("assistant"):
+            placeholder = st.empty()
+            full_response = ""
             
-            # استخدام أقوى وأسرع محرك (Gemini 1.5 Flash)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            # محاولة التنقل بين المفاتيح في حال فشل أحدها
+            success = False
+            random.shuffle(keys_list) # خلط المفاتيح لضمان التوزيع العادل
             
-            # توليد الرد مع خاصية الانتظار
-            with st.spinner("جاري جلب أفضل إجابة..."):
-                response = model.generate_content(prompt)
-                
-                if response.text:
-                    with st.chat_message("assistant"):
-                        st.markdown(response.text)
-                    st.session_state.messages.append({"role": "assistant", "content": response.text})
-                else:
-                    st.error("عذراً، لم أستطع توليد رد، حاول مرة أخرى.")
-        
-        except Exception as e:
-            st.error("الموقع عليه ضغط كبير حالياً بسبب كثرة الزوار، يرجى المحاولة بعد قليل.")
+            for key in keys_list:
+                try:
+                    genai.configure(api_key=key)
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    
+                    with st.spinner("جاري التفكير..."):
+                        response = model.generate_content(prompt)
+                        full_response = response.text
+                        placeholder.markdown(full_response)
+                        st.session_state.messages.append({"role": "assistant", "content": full_response})
+                        success = True
+                        break # اخرج من الحلقة إذا نجح الرد
+                except Exception:
+                    continue # إذا فشل مفتاح، انتقل فوراً للمفتاح اللي بعده
+            
+            if not success:
+                st.error("الموقع عليه ضغط كبير حالياً، يرجى إعادة إرسال الرسالة بعد ثوانٍ.")
 else:
-    # تنبيه في حال نسيت وضع المفتاح في Secrets
-    st.warning("⚠️ نظام 'الأسرار' غير مفعل. يرجى إضافة GEMINI_KEYS في الإعدادات.")
+    st.warning("⚠️ يرجى إضافة المفاتيح في إعدادات Secrets للبدء.")
